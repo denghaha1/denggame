@@ -1,7 +1,10 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const gridSize = 20;
-const tileCount = canvas.width / gridSize;
+const gridSize = 25;
+const tileCount = 24;
+
+canvas.width = tileCount * gridSize;   // 600px
+canvas.height = tileCount * gridSize;  // 600px
 
 let snake = {
     body: [{x: 10, y: 10}],
@@ -24,11 +27,55 @@ let isFirstGame = true;
 
 // 食物图片加载
 let foodImg = new Image();
-foodImg.src = 'sun.png';
 
-// 添加加载成功的处理
+// 添加一个函数来随机选择食物图片
+let currentFoodImageIndex = -1;
+
+// 在文件顶部添加已使用图片的记录
+let usedFoodImages = [];
+
+function getRandomFoodImage() {
+    // sun文件夹中的所有图片
+    const allFoodImages = ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'];
+    
+    // 如果所有图片都用过了，重置已使用列表
+    if (usedFoodImages.length === allFoodImages.length) {
+        usedFoodImages = [];
+    }
+    
+    // 获取还未使用的图片
+    const availableImages = allFoodImages.filter(img => !usedFoodImages.includes(img));
+    
+    // 随机选择一个未使用的图片
+    const randomIndex = Math.floor(Math.random() * availableImages.length);
+    const selectedImage = availableImages[randomIndex];
+    
+    // 记录已使用的图片
+    usedFoodImages.push(selectedImage);
+    
+    return 'sun/' + selectedImage;
+}
+
+// 修改生成食物的函数
+function generateFood() {
+    food.x = Math.floor(Math.random() * (tileCount - 2));
+    food.y = Math.floor(Math.random() * (tileCount - 2));
+    
+    // 随机选择新的食物图片
+    foodImg.src = getRandomFoodImage();
+    
+    // 确保食物不会生成在蛇身上
+    for (let part of snake.body) {
+        if (part.x === food.x && part.y === food.y) {
+            generateFood();
+            break;
+        }
+    }
+}
+
+// 添加食物图片加载成功的处理
 foodImg.onload = function() {
-    console.log('食物图片加载成功');
+    console.log('食物图片加载成功：', foodImg.src);
 };
 
 // 添加错误处理
@@ -51,7 +98,7 @@ snakeImg.onerror = function(e) {
     snakeImg = null;
 };
 
-// 在文件顶部添加相关的代码
+// 在文件顶部添加关的代码
 class Star {
     constructor() {
         this.reset();
@@ -103,11 +150,18 @@ class Meteor {
     reset() {
         this.x = Math.random() * canvas.width;
         this.y = 0;
-        this.size = Math.random() * 3 + 2;  // 增加流星大小
-        this.speed = Math.random() * 8 + 5;  // 增加流星速度
+        this.size = Math.random() * 1.2 + 0.3;     // 保持流星大小
+        this.speed = Math.random() * 6 + 4;        // 增加速度使轨迹更流畅
         this.angle = Math.PI / 4 + (Math.random() * Math.PI / 6);
-        this.tailLength = Math.random() * 30 + 20;  // 增加尾巴长度
-        this.brightness = Math.random() * 0.3 + 0.7;  // 增加亮度
+        this.tailLength = Math.random() * 35 + 25;  // 显著增加尾巴长度
+        this.brightness = Math.random() * 0.3 + 0.7;
+        
+        // 保持白色和浅蓝色
+        const colors = [
+            'rgba(255, 255, 255, ',    // 纯白色
+            'rgba(135, 206, 250, '     // 浅天蓝色
+        ];
+        this.color = colors[Math.floor(Math.random() * colors.length)];
     }
 
     update() {
@@ -132,8 +186,9 @@ class Meteor {
             this.y - Math.sin(this.angle) * this.tailLength
         );
         
-        gradient.addColorStop(0, `rgba(255, 255, 255, ${this.brightness})`);
-        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        // 使用选定的颜色创建渐变
+        gradient.addColorStop(0, this.color + this.brightness + ')');
+        gradient.addColorStop(1, this.color + '0)');
         
         ctx.strokeStyle = gradient;
         ctx.lineWidth = this.size;
@@ -152,7 +207,7 @@ class Meteor {
 }
 
 // 创建流星数组
-const meteors = Array(20).fill(null).map(() => new Meteor());
+const meteors = Array(16).fill(null).map(() => new Meteor());
 
 // 在文件顶部添加背景音乐相关代码
 let bgMusic = new Audio('gequ.mp3');
@@ -168,13 +223,18 @@ function startGame() {
         console.error('背景音乐播放失败：', error);
     });
     
+    // 将蛇的初始位置设置在画布中间
+    const centerX = Math.floor(tileCount / 2) - 1;  // 考虑到爱心占两格，向左偏移1格
+    const centerY = Math.floor(tileCount / 2) - 1;  // 考虑到爱心占两格，向上偏移1格
+    
     snake = {
-        body: [{x: 10, y: 10}],
+        body: [{x: centerX, y: centerY}],
         dx: 0,
         dy: 0,
         nextDx: 1, // 设置初始方向向右
         nextDy: 0
     };
+    
     score = 0;
     gameSpeed = 200;
     document.getElementById('score').textContent = score;
@@ -190,20 +250,6 @@ function startGame() {
     if (isFirstGame) {
         draw();
         isFirstGame = false;
-    }
-}
-
-// 生成食物
-function generateFood() {
-    food.x = Math.floor(Math.random() * (tileCount - 2));
-    food.y = Math.floor(Math.random() * (tileCount - 2));
-    
-    // 确保食物不会生成在蛇身上
-    for (let part of snake.body) {
-        if (part.x === food.x && part.y === food.y) {
-            generateFood();
-            break;
-        }
     }
 }
 
@@ -225,7 +271,7 @@ function update() {
     // 先将新的头部添加到蛇身
     snake.body.unshift(head);
     
-    // 检查是否吃到食物（考虑两格大小的碰撞）
+    // 检查是否吃到食物（考两格大小的碰撞）
     const headRight = head.x + 1;
     const headBottom = head.y + 1;
     const foodRight = food.x + 1;
@@ -241,7 +287,7 @@ function update() {
     if (!ateFood) {
         snake.body.pop();
     } else {
-        // 如果吃到食物，保留当前长度（因为已经添加了头部，相当于增长一格）
+        // 如果吃到食物，保留当前长度（因为已经添了头部，相当于增长一格）
         score += 10;
         document.getElementById('score').textContent = score;
         generateFood();
@@ -255,13 +301,13 @@ function update() {
     draw();
 }
 
-// 检查碰撞
+// 修改检查碰撞函数，只检查边界碰撞
 function checkCollision(head) {
     // 检查墙壁碰撞（考虑蛇头的大小为2格）
     const headRight = head.x + 1;  // 蛇头右边界
     const headBottom = head.y + 1;  // 蛇头下边界
     
-    // 一旦碰到任何边界就立即返回true
+    // 只检查边界碰撞
     if (head.x < 0 ||             // 左边界
         headRight >= tileCount ||  // 右边界
         head.y < 0 ||             // 上边界
@@ -269,14 +315,7 @@ function checkCollision(head) {
         return true;
     }
     
-    // 检查自身碰撞（只检查与其他身体部分的重叠）
-    for (let i = 4; i < snake.body.length; i++) {
-        const part = snake.body[i];
-        if (head.x === part.x && head.y === part.y) {
-            return true;
-        }
-    }
-    
+    // 移除自身碰撞检测
     return false;
 }
 
@@ -317,7 +356,7 @@ function drawHeart(ctx, x, y, size) {
     
     // 添加图片加载状态检查和调试信息
     if (snakeImg && snakeImg.complete) {
-        console.log('正在绘制蛇身图片');
+        console.log('正在制蛇身图片');
         try {
             ctx.drawImage(snakeImg,
                 x - size/2,  // 片左上角x坐标
@@ -345,10 +384,13 @@ function drawHeart(ctx, x, y, size) {
     ctx.restore();
 }
 
-// 修改 draw 函数中绘制蛇的部分
+// 改 draw 函数中绘制蛇的部分
 function draw() {
-    // 使用深色背景
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';  // 调整透明度使拖尾效果更明显
+    // 清除画布但不填充黑色背景
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 使用非常透明的黑色作为背景，让星空效果能显示但不遮挡背景图片
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';  // 将透明度改为0.2
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // 绘制星星
@@ -457,5 +499,5 @@ document.addEventListener('keydown', (e) => {
 // 初始化最高分
 document.getElementById('highScore').textContent = localStorage.getItem('highScore') || 0;
 
-// 初始绘制空白游戏板
+// 初始绘制空白游戏
 draw();

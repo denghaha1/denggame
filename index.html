@@ -1,23 +1,77 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>贪吃蛇游戏</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+            font-family: Arial, sans-serif;
+            background-image: url('hetu2.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        #gameCanvas {
+            border: none;
+            box-shadow: none;
+            margin: 20px;
+            width: 600px;
+            height: 600px;
+        }
+        
+        #score, #highScore {
+            font-size: 24px;
+            margin: 10px;
+        }
+        
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        #gameOver.hidden {
+            display: none;
+        }
+        
+        #startButton {
+            font-size: 24px;
+            padding: 10px 30px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        #startButton:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <div class="game-container">
-        <canvas id="gameCanvas" width="400" height="400"></canvas>
-        <div class="game-info">
-            <p>得分: <span id="score">0</span></p>
-            <p>最高分: <span id="highScore">0</span></p>
-            <button id="startButton" onclick="startGame()">开始游戏</button>
-        </div>
-        <div id="gameOver" class="game-over hidden">
-            <h2>游戏结束!</h2>
-            <p>你的得分: <span id="finalScore">0</span></p>
-            <button onclick="startGame()">重新开始</button>
-        </div>
+    <div id="score">分数: 0</div>
+    <div id="highScore">最高分: 0</div>
+    <canvas id="gameCanvas"></canvas>
+    <button id="startButton" onclick="startGame()">开始游戏</button>
+    <div id="gameOver" class="hidden">
+        <h2>游戏结束</h2>
+        <p>最终得分: <span id="finalScore">0</span></p>
+        <button onclick="startGame()">重新开始</button>
     </div>
     <script src="game.js"></script>
 </body>
