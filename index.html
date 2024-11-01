@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>贪吃蛇游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <div class="game-info">
+            <p>得分: <span id="score">0</span></p>
+            <p>最高分: <span id="highScore">0</span></p>
+            <button id="startButton" onclick="startGame()">开始游戏</button>
+        </div>
+        <div id="gameOver" class="game-over hidden">
+            <h2>游戏结束!</h2>
+            <p>你的得分: <span id="finalScore">0</span></p>
+            <button onclick="startGame()">重新开始</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html> 
